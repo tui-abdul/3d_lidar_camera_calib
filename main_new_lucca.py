@@ -11,30 +11,23 @@ import message_filters
 from sensor_msgs.msg import Image, CameraInfo, PointCloud2
 import open3d as od3
 import open3d as od31
-#import ros2_numpy
 from rclpy import  qos
 import cv2.aruco as aruco
 from aruco import my_estimatePoseSingleMarkers, getCornersInCameraWorld
 import inspect
 from bound_gui import create_slider_gui
-#from sensor_msgs import point_cloud2
 from sensor_msgs_py.point_cloud2 import read_points
 from functools import partial
 import tkinter as tk
 from tkinter import ttk
 import pyransac3d as pyrsc
-#from pynput import keyboard
-#from data.pyqt5_ import SliderGUI
+
 from crop import *
 from skspatial.objects import Line, Points, Plane
-#from skspatial.plotting import plot_3d
+
 import matplotlib.pyplot as plt 
 import os
-#from projection_test.projection import draw_pointcloud_color
-#from data.open3d_slider_1 import *
 
-#import open3d.visualization.gui as gui
-#import open3d.visualization.rendering as rendering
 
 class calib(Node):
 
@@ -159,12 +152,9 @@ class calib(Node):
         detector = aruco.ArucoDetector(aruco_dict, parameters)
         corners, ids, rejectedCandidates = detector.detectMarkers(frame)     
         if corners:
-            #rvec, tvec, _ = my_estimatePoseSingleMarkers(corners, 0.393, self.matrix_coefficients, self.distortion_coefficients)   
-            #dist = np.sqrt(tvec[0][0]**2 + tvec [0][1] **2 + tvec [0][2]**2)
+            
             cv2.aruco.drawDetectedMarkers(frame, corners)
-            #cv2.putText(frame, f"Distance: {dist} m", (100, 300), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
-            #marker_corners_3d = getCornersInCameraWorld(0.393,rvec=np.asarray(rvec),tvec=np.asarray(tvec))
-            #print("3d marker corner",marker_corners_3d)
+            
             pass
         else:
             print("corners not detected")
@@ -231,24 +221,7 @@ class calib(Node):
         print(' points at the end',imagePoints)
         assert(objectPoints.shape[0]  == imagePoints.shape[0] )
         success, rvec, tvec, inliers, = cv2.solvePnPRansac(objectPoints,imagePoints,mat_intrinsic,dist_coeffs,iterationsCount=100000, reprojectionError=0.5, confidence=0.99)
-        '''
-        # Solve PnP problem using solvePnPGeneric
-        success, rvecs, tvecs, reprojectionErrors = cv2.solvePnPGeneric(
-            objectPoints, imagePoints, mat_intrinsic, dist_coeffs,
-            flags=cv2.SOLVEPNP_P3P
-        )
         
-        # Print results
-        if success:
-            #for i in range(len(rvecs)):
-            #    print(f"Solution {i+1}:")
-            print(f"Rotation Vector (rvec): \n{rvecs}")
-            print(f"Translation Vector (tvec): \n{tvecs}")
-            if reprojectionErrors is not None:
-                print(f"Reprojection Error: {reprojectionErrors}")
-        else:
-            print("PnP solution not found.")
-        '''
         return rvec, tvec
     def calculate_ext_param_comulative(self,objectPoints,imagePoints,mat_intrinsic,dist_coeffs):
         objectPoints =np.array(objectPoints)
@@ -339,10 +312,6 @@ class calib(Node):
             label.grid(row=i, column=2, sticky=tk.W, padx=10)
             label_values[name] = label
 
-        # initaial value
-        #for i ,name in enumerate(slider_names):
-        #    sliders[i].set(initial_value[i] )
-        #    label_values[name].config(text=f"{name}: {initial_value[i] - 300/ 100 :.2f}")
 
 
         # Create an Exit button
@@ -356,41 +325,7 @@ class calib(Node):
 
         return update_slider
 
-    '''
-    def select_roi(self,pc_as_numpy_array):
-        bounds = self.select_roi_gui()
-        slider_value = bounds 
-        print(slider_value)
-
-
-        inrange = np.where( (pc_as_numpy_array[:, 2] > slider_value['Z Lower Bound'])  &
-            (pc_as_numpy_array[:, 2] < slider_value['Z Upper Bound'])&
-            (pc_as_numpy_array[:, 0] < slider_value['X Upper Bound'])   &
-            (pc_as_numpy_array[:, 0] > slider_value['X Lower Bound'])  &
-            (pc_as_numpy_array[:, 1] < slider_value['Y Upper Bound'])   &
-            (pc_as_numpy_array[:, 1] > slider_value['Y Lower Bound']))
-
-        pc_as_numpy_array = pc_as_numpy_array[inrange]        
-        
-        self.pcd.points = od3.utility.Vector3dVector(pc_as_numpy_array[:,:3])
-        # Visualize cloud and edit
-        #self.vis = od3.visualization.VisualizerWithEditing()
-        self.vis = od3.visualization.VisualizerWithVertexSelection()
-        self.vis.create_window()
-        self.vis.add_geometry(self.pcd)
-        opt = self.vis.get_render_option()
-        opt.show_coordinate_frame = True
-        self.vis.run()
-        pick_points_index = self.vis.get_picked_points() #[84, 119, 69]
-        #print(pick_points_index[0].coord  )
-        self.vis.destroy_window()
-        obj_points = np.zeros((len(pick_points_index),3))
-        
-        for i,point_obj in enumerate(pick_points_index):
-            obj_points[i]  = pc_as_numpy_array[point_obj.index,:3] 
-
-        return obj_points, pick_points_index
-    '''
+    
     def on_value_changed_x_lower(self,slider):
         self.x_lower = slider.double_value
         return self.x_lower
@@ -415,82 +350,12 @@ class calib(Node):
     def quit_callback(self,app):
         app.close()
         print('button')
-    '''
-    def create_window(self):
-
-        self.window = self.app.create_window("Open3D", width = 400, height=250)
-        print('hello')
-        w = self.window
-        
-        em = w.theme.font_size
-        
-        margin = 0.5 * em
-        
-        layout = gui.Vert(0, gui.Margins(margin))
-        self.window.add_child(layout)
-        slider_x_lower = gui.Slider(gui.Slider.DOUBLE)
-        slider_x_lower.set_limits(-3.0, +3.0)
-        slider_x_lower.set_on_value_changed(lambda value: self.on_value_changed_x_lower(slider_x_lower))
-        layout.add_child(slider_x_lower)
-
-        slider_x_upper = gui.Slider(gui.Slider.DOUBLE)
-        slider_x_upper.set_limits(-3.0, +3.0)
-        slider_x_upper.set_on_value_changed(lambda value: self.on_value_changed_x_upper(slider_x_upper))
-        layout.add_child(slider_x_upper)
-
-        slider_y_lower = gui.Slider(gui.Slider.DOUBLE)
-        slider_y_lower.set_limits(-3.0, +3.0)
-        slider_y_lower.set_on_value_changed(lambda value: self.on_value_changed_y_lower(slider_y_lower))
-        layout.add_child(slider_y_lower)
-
-        slider_y_upper = gui.Slider(gui.Slider.DOUBLE)
-        slider_y_upper.set_limits(-3.0, +3.0)
-        slider_y_upper.set_on_value_changed(lambda value: self.on_value_changed_y_upper(slider_y_upper))
-        layout.add_child(slider_y_upper)
-
-        slider_z_lower = gui.Slider(gui.Slider.DOUBLE)
-        slider_z_lower.set_limits(-3.0, +3.0)
-        slider_z_lower.set_on_value_changed(lambda value: self.on_value_changed_z_lower(slider_z_lower))
-        layout.add_child(slider_z_lower)
-
-        slider_z_upper = gui.Slider(gui.Slider.DOUBLE)
-        slider_z_upper.set_limits(-3.0, +3.0)
-        slider_z_upper.set_on_value_changed(lambda value: self.on_value_changed_z_upper(slider_z_upper))
-        layout.add_child(slider_z_upper)
-        
-        
-        quit_button = gui.Button("Quit")
-        quit_button.set_on_clicked(lambda app: self.quit_callback(self.window))
-        layout.add_child(quit_button) 
-        
-        return  self.window
     
-    def main_slider(self):
-
-        self.create_window()
-        
-        self.app.run()
-        #self.window.close()
-        #self.app.quit()
-        
-    
-        #del self.window
-    ''' 
 
     def select_roi(self,pc_as_numpy_array):
     
         
 
-        '''
-        inrange = np.where( (pc_as_numpy_array[:, 2] > self.z_lower )  &
-            (pc_as_numpy_array[:, 2] < self.z_upper )&
-            (pc_as_numpy_array[:, 0] < self.x_upper )   &
-       (pc_as_numpy_array[:, 0] >  self.x_lower )  &
-            (pc_as_numpy_array[:, 1] < self.y_upper )   &
-            (pc_as_numpy_array[:, 1] > self.y_lower ))
-
-            pc_as_numpy_array = pc_as_numpy_array[inrange]       
-            ''' 
         while True:
             print("Looping...")
             # Your code here...
@@ -590,8 +455,7 @@ class calib(Node):
         [a, b, c, d] = plane_model
         print(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
         print('plane equation inliers',inliers)
-        #print('pcd',pcd)
-        #print('inliers',inliers,len(inliers))
+     
         plane = [a, b, c, d]
         return plane
     
@@ -633,13 +497,7 @@ class calib(Node):
         points = Points(points)
         line_fit = Line.best_fit(points)
         print(line_fit)
-        '''
-        plot_3d(
-        line_fit.plotter(t_1=-7, t_2=7, c='k'),
-        points.plotter(c='b', depthshade=False),
-        )
-        #plt.show()
-        '''
+        
         return line_fit
     def line_intersection(self,line_a,line_b):
         point = line_a.intersect_line(line_b, check_coplanar = False)
@@ -696,18 +554,7 @@ class calib(Node):
         vis.run()
         vis.destroy_window()
     def find_point_on_plane(self,a, b, c, d):
-        """
-        Find a point on the plane ax + by + cz + d = 0 by setting x and y to 0 and solving for z.
-
-        Args:
-        a (float): Coefficient of x in the plane equation.
-        b (float): Coefficient of y in the plane equation.
-        c (float): Coefficient of z in the plane equation.
-        d (float): Constant term in the plane equation.
-
-        Returns:
-        tuple: A point (x, y, z) on the plane.
-        """
+        
         # Set x = 0 and y = 0
         x = 0
         y = 0
@@ -731,14 +578,12 @@ class calib(Node):
             point_projected.append(out)
         point_projected = np.array(point_projected)
         projected_points = np.hstack((np.asarray(point_projected),object_points[:,3].reshape(-1, 1)) )
-        #print('projected_points', projected_points)
+        
         test = projected_points[(projected_points[:, 3] == np.min(projected_points[:, 3])) | (projected_points[:, 3] == np.max(projected_points[:, 3]))] 
-        #print('test',test)
+        
         projected_cloud = od3.geometry.PointCloud()
         projected_cloud.points = od3.utility.Vector3dVector(projected_points[:,:3] )
-        #projected_cloud.points = od3.utility.Vector3dVector(np.asarray(board_points))
-        # Plot the projected points
-        #o3d.visualization.draw_geometries([projected_cloud])
+        
         vis = od3.visualization.VisualizerWithEditing()
         vis.create_window('plane_fitting')
         vis.add_geometry(projected_cloud)
@@ -747,20 +592,17 @@ class calib(Node):
         vis.run()
         vis.destroy_window()
         pick_points_index = vis.get_picked_points()
-        print('picked_points',pick_points_index)
+        
         points = np.asarray(projected_cloud.points)[pick_points_index] 
-        print(points)
-        #return np.asarray(projected_cloud.points)
-        print('plane fitting',projected_points)
+        
+       
         return points, projected_points[:,:3], projected_points
     
     def sort_scan_beam(self, points):
-        #top_edge = points[points[:, 3] == np.min(points[:, 3])]
-        #bottom_edge = points[points[:, 3] == np.max(points[:, 3])]
-        sorted_point_cloud = points#[np.argsort(points[:, 3])]
+        
+        sorted_point_cloud = points
 
-        # Print the rearranged point cloud
-        print('sorted point cloud',sorted_point_cloud)
+        
         return sorted_point_cloud
     
     def fix_scan_beams(self,scan_beams):
@@ -769,7 +611,7 @@ class calib(Node):
 
         for scan in values:
             index = np.where(scan_beams[:,3] == scan)[0]
-            #print('index',index)
+            
             if len(index) > 1:
                 line_fit = Line.best_fit(scan_beams[index,:3]  ) 
                 for pont in (scan_beams[index,:3]):
@@ -778,8 +620,7 @@ class calib(Node):
                     new_beams = np.vstack((new_beams,each_point))
             else:
                 new_beams = np.vstack((new_beams,scan_beams[index,:]))
-        #print('input_beam',scan_beams)
-        #print('new_beam',new_beams)
+        
         return new_beams
     
     def find_edges(self,sorted_point_cloud):
@@ -798,17 +639,15 @@ class calib(Node):
         
         left_edge = np.squeeze(np.array(left_edge))[:,:3] 
         right_edge = np.squeeze(np.array(right_edge))[:,:3] 
-        #top_edge = np.squeeze(top_edge)[:,:3] 
-        #bottom_edge = np.squeeze(bottom_edge)[:,:3] 
+       
 
         bound.append(left_edge)
         bound.append(right_edge)
         bound = np.squeeze(np.asarray(bound))
         bound = bound.reshape(bound.shape[0]*bound.shape[1],3 )
-        #print('bound',bound.shape)
-        #visualize
+       
         
-        #print('sorted_pc',sorted_point_cloud)
+        
         projected_cloud = od3.geometry.PointCloud()
         projected_cloud.points = od3.utility.Vector3dVector(sorted_point_cloud[:,:3]   )
         vis = od3.visualization.VisualizerWithEditing()
@@ -818,22 +657,7 @@ class calib(Node):
         opt.show_coordinate_frame = True
         vis.run()
         vis.destroy_window()
-        '''
-        projected_cloud = od3.geometry.PointCloud()
-        projected_cloud.points = od3.utility.Vector3dVector(sorted_point_cloud[:,:3] )
-
-        #boundarys, mask = projected_cloud.compute_boundary_points(0.02, 30)
-        # TODO: not good to get size of points.
-        #print(f"Detect {boundarys.point.positions.shape[0]} bnoundary points from {projected_cloud.point.positions.shape[0]} points.")
-
-        boundarys = boundarys.paint_uniform_color([1.0, 0.0, 0.0])
-        projected_cloud = projected_cloud.paint_uniform_color([0.6, 0.6, 0.6])
-        od3.visualization.draw_geometries([projected_cloud.to_legacy(), boundarys.to_legacy()],
-                                              zoom=0.3412,
-                                              front=[0.3257, -0.2125, -0.8795],
-                                              lookat=[2.6172, 2.0475, 1.532],
-                                              up=[-0.0694, -0.9768, 0.2024])
-        '''
+        
         return bound#left_edge, right_edge, top_edge, bottom_edge
 
     def transformation_matrix(self,rvec, tvec):
@@ -844,19 +668,16 @@ class calib(Node):
         T_lidar_to_camera[:3, :3] = R_lidar_to_camera
         
         T_lidar_to_camera[:3, 3] = tvec.flatten()
-        #print('T_lidar_to_camera',T_lidar_to_camera)
-        # Invert T to get camera to LIDAR transformation
+        
         T_camera_to_lidar = np.linalg.inv(T_lidar_to_camera)
 
-        # Projection matrix from camera to LIDAR
-        # Projection matrix from camera to LIDAR
-        #P_camera_to_lidar = np.vstack((T_camera_to_lidar[:3], [0, 0, 0, 1]))
+       
 
         print("Projection Matrix (LIDAR to Camera):\n", T_lidar_to_camera)
         print("Projection Matrix (Camera to LIDAR):\n", T_camera_to_lidar)
         print("T distance", np.sqrt(tvec[0]**2 +tvec[1]**2 + tvec[2]**2) )
 
-        #return T_lidar_to_camera, T_camera_to_lidar
+        
     def fix_data_type(self, array):
         points_array_ring = np.zeros((65536, 4))
         for i, point in enumerate(array):
@@ -884,21 +705,12 @@ class calib(Node):
                 if key == 27:  # 27 is the ASCII code for the Escape key
                     cv2.destroyAllWindows()
                     break
-        #points_array_ring = np.array((65536,4))
+        
         points_gen =  read_points(ouster, field_names=('x','y','z','ring'), skip_nans=True)
         points_array = np.fromiter(points_gen, dtype=[('x', np.float32), ('y', np.float32), ('z', np.float32), ('ring',np.float32)])
         points_array = np.asarray(points_array)
         pc_as_numpy_ring = self.fix_data_type(points_array)
-        #print("start again",pc_as_numpy_ring)
-        #pc_as_numpy_array = np.array(ros2_numpy.point_cloud2.point_cloud2_to_array(ouster)['xyz'])
-        #print('resolution2',pc_as_numpy_array.shape)
-        #print(np.array_equal(pc_as_numpy_array[250:300,:] ,pc_as_numpy_ring[250:300,:] ))
-        #pc_as_numpy_array = self.trasnformation(pc_as_numpy_ring[:,:3] )
-        #print("shape of lidar points",pc_as_numpy_array[:,:3].shape)
         
-        #print("shape of lidar points",pc_as_numpy_array.shape)
-        #pc_as_numpy_array = np.hstack((pc_as_numpy_array[:,:3],pc_as_numpy_ring[:,3].reshape(-1,1)))
-        #roi = self.select_roi(pc_as_numpy_array)
        
         roi = self.select_roi(pc_as_numpy_ring)
         print('roi',roi)
@@ -906,12 +718,7 @@ class calib(Node):
         if self.skip_flag == 'skip':
             self.skip_flag = None
             return
-        #print(roi.shape)
-        #self.select_roi_gui()
-        #print('roi', roi)
-        #if roi.size == 0:
-        #    print("get next frame ")
-        #    pass
+        
         
         plane_equation = self.plane_equation(roi[:,:3] )
         obj_points, rest_of_points, plane_fit_with_ring_points = self.plane_fitting(plane_equation,roi)
@@ -919,7 +726,7 @@ class calib(Node):
         
         sorted_beams = self.sort_scan_beam(plane_fit_with_ring_points)
         new_beams = self.fix_scan_beams(sorted_beams)
-        #self.pcd_conversion(new_beams[:,:3]   )
+        
         bound = self.find_edges(new_beams)
         points1 = self.select_line(bound)
         line1 = self.line_detect_scipy(points1)
@@ -933,14 +740,7 @@ class calib(Node):
         corner_3d_2 = self.line_intersection(line2,line3)
         corner_3d_3 = self.line_intersection(line3,line4)
         corner_3d_4 = self.line_intersection(line4,line1)
-        #self.line_detect(left  ,rest_of_points)
-        #self.line_detect(right,rest_of_points)
-        #self.line_detect(top,rest_of_points)
-        #self.line_detect(bottom,rest_of_points)
-        #self.visualize(rest_of_points[:20,:])
-        #self.pcd_conversion(roi)
-        #exit()
-        #obj_points = self.select_obj_points(pc_as_numpy_array)
+        
         obj_points = np.vstack((corner_3d_1,corner_3d_2,corner_3d_3,corner_3d_4))
         
         print('obj_points shape',obj_points.shape)
@@ -958,32 +758,18 @@ class calib(Node):
         self.transformation_matrix(rvec, tvec)
         
         points2D_reproj = self.project_lidar_data(obj_points, rvec, tvec, self.matrix_coefficients, self.distortion_coefficients)
-        #points2D_more_points = self.project_lidar_data(rest_of_points, rvec, tvec, self.matrix_coefficients, self.distortion_coefficients)
-        #roi1 = self.select_roi(pc_as_numpy_array)
-        #print("roi1",roi1)
-        #points2D_more_more_points = self.project_lidar_data(roi1, rvec, tvec, self.matrix_coefficients, self.distortion_coefficients)
+        
         print('proj points',points2D_reproj)
-        #self.project_points(undistort_frame,points2D_reproj)
+        
         self.project_points(frame,points2D_reproj)
-        #   self.project_more_points(undistort_frame,points2D_more_points)
-        #self.project_more_more_points(undistort_frame,points2D_more_more_points)
+        
         rmse = self.re_proj_error(points2D_reproj,corners )
         print('rmse',rmse)
         cv2.namedWindow("Image", cv2.WINDOW_NORMAL) 
         cv2.imshow('Image',frame)
-        #cv2.imshow('Image',undistort_frame)
-
-        #draw_pointcloud_color(pc_as_numpy_ring[:,:3] , undistort_frame, rvec, tvec, self.matrix_coefficients, [1200,800] )
+       
         if rmse < 20:
-            #self.points_2d.append(corners)
-            #self.points_3d.append(obj_points)
-            #object_pts = np.array(self.points_3d)
-            #object_pts = object_pts.reshape(object_pts.shape[0]*object_pts.shape[1],object_pts.shape[2])
-            #rvec_add ,tvec_add = self.calculate_ext_param_comulative(object_pts,self.points_2d,self.matrix_coefficients,self.distortion_coefficients)
-            #points2D_reproj = self.project_lidar_data(object_pts, rvec_add, tvec_add, self.matrix_coefficients, self.distortion_coefficients)
-            #rmse = self.re_proj_error_comulative(np.squeeze(points2D_reproj),np.squeeze(np.asarray(self.points_2d)) )
-            #print('commulative rmse',rmse)
-            #self.transformation_matrix(rvec_add ,tvec_add)
+            
             filename_1 = 'img_points.txt'
             filename_2 = 'lidar_points.txt'
             if os.path.exists(filename_1 and filename_2):
