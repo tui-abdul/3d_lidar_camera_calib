@@ -82,7 +82,7 @@ The node provides interactive visualizations for selecting and processing point 
 Contributions are welcome! Please fork the repository and create a pull request with your changes.
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under
 
 ## Contact
 For questions or feedback, feel free to reach out to:
