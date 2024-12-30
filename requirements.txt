@@ -1,0 +1,15 @@
+builtin_interfaces==1.2.1
+cv_bridge==3.2.1
+matplotlib==3.5.1
+message_filters==4.3.5
+numpy==1.24.2
+numpy==1.21.5
+open3d==0.18.0
+opencv_python==4.9.0.80
+py3rosmsgs==1.18.2
+pyransac3d==0.6.0
+PyYAML==5.4.1
+PyYAML==6.0.2
+rclpy==3.3.13
+sensor_msgs==4.2.4
+sensor_msgs_py==4.2.4
