@@ -71,65 +71,9 @@ class calib(Node):
         self.points_2d = []
         self.points_3d = []  
         print('Initialization complete')
-    def overlay(self,image_msg,lidar_msg,rvec,tvec):
-        #image = self.bridge.imgmsg_to_cv2(image_msg, desired_encoding="passthrough")
-        #image = cv2.cvtColor(image_msg, cv2.COLOR_GRAY2BGR)
-        image = image_msg
-        undistorted_image = cv2.undistort(image, self.matrix_coefficients,self.distortion_coefficients)
-        points_gen =  read_points(lidar_msg, field_names=('x','y','z','intensity'), skip_nans=True)
-        points_array = np.fromiter(points_gen, dtype=[('x', np.float32), ('y', np.float32), ('z', np.float32), ('intensity',np.float32)])
-        points_array = np.asarray(points_array)
-        pc_as_numpy_ring = self.fix_data_type(points_array)
-        lidar_points = pc_as_numpy_ring[:,:3]
-        lidar_points = np.array(lidar_points,dtype=np.float32)
-        intensities = pc_as_numpy_ring[:,3]  
-        lidar_points = self.trasnformation(lidar_points)[:,:3] 
-
-        # Project the points
-        
-        projected_points, _ = cv2.projectPoints(lidar_points, rvec, tvec, self.matrix_coefficients, self.distortion_coefficients)
-        # Convert points to integer for visualization
-        projected_points = projected_points.squeeze().astype(int)
-
-        # Image dimensions
-        height, width = image.shape[:2]
-
-        # Filter points within the image boundaries
-        valid_points = []
-        valid_intensities = []
-        for i, point in enumerate(projected_points):
-            x, y = point
-            if 0 <= x < width and 0 <= y < height:
-                valid_points.append((x, y))
-                valid_intensities.append(intensities[i])
-        
-        # Convert to numpy array
-        #valid_points = np.array(valid_points)
-        valid_points = np.array(valid_points, dtype=np.float32).reshape(-1, 1, 2)
-        valid_intensities = np.array(valid_intensities)
-        # Undistort valid points
-        undistorted_points = cv2.undistortPoints(valid_points, self.matrix_coefficients, self.distortion_coefficients, P=self.matrix_coefficients)
-        undistorted_points = undistorted_points.reshape(-1, 2).astype(int)
-
-        # Normalize intensity values to [0, 1] range
-        normalized_intensities = (valid_intensities - valid_intensities.min()) / (valid_intensities.max() - valid_intensities.min())
-
-        # Apply colormap
-        colormap = plt.get_cmap('jet')
-        colors = (colormap(normalized_intensities)[:, :3] * 255).astype(np.uint8)
-
-        # Visualize valid LiDAR points on the image
-        for point, color in zip(undistorted_points, colors):
-            x, y = point
-            cv2.circle(undistorted_image, (x, y), radius=3, color=(int(color[0]), int(color[1]), int(color[2])), thickness=-1)
-            #cv2.circle(image, (x, y), radius=3,color=[0,0,255] , thickness=-1)
-        cv2.namedWindow("Image", cv2.WINDOW_NORMAL) 
-    
-        cv2.imshow('Image',undistorted_image)
-        #cv2.imshow('Image',image)
 
         
-    
+    ####### irrelevent #####
     def trasnformation(self,pc_as_numpy_array):
         t_mat =np.array([
                 [-1, 0, 0, 0], 
@@ -159,6 +103,7 @@ class calib(Node):
         else:
             print("corners not detected")
         return corners
+    
     def marker_centroid(self,corners):
         print('marker centroid',corners.shape)
         centroid = np.mean(corners, axis=0)
@@ -177,17 +122,7 @@ class calib(Node):
             x,y = points_2D[k][0][0].astype(int),points_2D[k][0][1].astype(int)
             if 0<x<len(img[0]) and 0<y<len(img[1]):
                 cv2.circle(img, (x,y), 6,  (255, 0, 0), -1)
-    def project_more_points(self,img,points_2D):
-        for k in range(len(points_2D)):
-            x,y = points_2D[k][0][0].astype(int),points_2D[k][0][1].astype(int)
-            if 0<x<len(img[0]) and 0<y<len(img[1]):
-                cv2.circle(img, (x,y), 3,  (0, 0, 255), -1)
-    def project_more_more_points(self,img,points_2D):
-        for k in range(len(points_2D)):
-            x,y = points_2D[k][0][0].astype(int),points_2D[k][0][1].astype(int)
-            #print('image',img.shape, img[0].shape,img[1].shape  )
-            if 0<x<len(img[0]) and 0<y<len(img[1]):
-                cv2.circle(img, (x,y), 1,  (0, 255, 0), -1)
+    
         
     def re_proj_error(self,points2D_reproj,points2D ):
         
@@ -200,21 +135,7 @@ class calib(Node):
         rmse = np.sqrt(np.mean(error[:, 0] ** 2 + error[:, 1] ** 2))
         
         return rmse
-    
-    def re_proj_error_comulative(self,points2D_reproj,points2D ):
-        
-        #points2D_reproj = points2D_reproj.reshape(5,2)
-   
-        if(points2D_reproj.shape == points2D.shape):
-            error = (points2D_reproj - points2D)#[inliers]  # Compute error only over inliers.
-        
-            #error = error.reshape(5,2)
-            rmse = np.sqrt(np.mean(error[:, 0] ** 2 + error[:, 1] ** 2))
-            print('comulative rmse',rmse)
-        else:
-            print('fix rmase, it is not working')
-        
-        return 0
+
 
     def calculate_ext_param(self,objectPoints,imagePoints,mat_intrinsic,dist_coeffs):
         print('object points at the end',objectPoints)
@@ -223,17 +144,7 @@ class calib(Node):
         success, rvec, tvec, inliers, = cv2.solvePnPRansac(objectPoints,imagePoints,mat_intrinsic,dist_coeffs,iterationsCount=100000, reprojectionError=0.5, confidence=0.99)
         
         return rvec, tvec
-    def calculate_ext_param_comulative(self,objectPoints,imagePoints,mat_intrinsic,dist_coeffs):
-        objectPoints =np.array(objectPoints)
-        imagePoints = np.array(imagePoints)
-        objectPoints = objectPoints.reshape(-1,objectPoints.shape[-1])
-        imagePoints = imagePoints.reshape(-1,imagePoints.shape[-1])
-        print('commulative ob points',objectPoints.shape)
-        print('comulative image points',imagePoints.shape)
-        assert(objectPoints.shape[0]  == imagePoints.shape[0] )
-        success, rvec, tvec, inliers, = cv2.solvePnPRansac(objectPoints,imagePoints,mat_intrinsic,dist_coeffs,iterationsCount=1000000, reprojectionError=0.30, confidence=0.99)
-        #rvec_refine, tvec_refine = cv2.solvePnPRefineLM(objectPoints[inliers],imagePoints[inliers], mat_intrinsic, dist_coeffs,rvec,tvec)
-        return rvec, tvec
+    
     
     def project_lidar_data(self,objectPoints, rvec, tvec, mat_intrinsic, dist_coeffs):
         print('object points data',objectPoints.shape)
@@ -241,120 +152,10 @@ class calib(Node):
         points_2D, _ = cv2.projectPoints(objectPoints,rvec,tvec,mat_intrinsic , dist_coeffs)
         return points_2D
     
-    def select_obj_points(self,pc_as_numpy_array):
-        obj_points = np.zeros((4,3))
-        
-        self.pcd.points = od3.utility.Vector3dVector(pc_as_numpy_array[:,:3] )
-        # Visualize cloud and edit
-        #self.vis = od3.visualization.VisualizerWithEditing()
-        self.vis = od3.visualization.VisualizerWithVertexSelection()
-        self.vis.create_window()
-        self.vis.add_geometry(self.pcd)
-        opt = self.vis.get_render_option()
-        opt.show_coordinate_frame = True
-        self.vis.run()
-        pick_points_index = self.vis.get_picked_points() #[84, 119, 69]
-        self.vis.destroy_window()
-        #print(pc_as_numpy_array.shape)
-        for i,index in enumerate(pick_points_index):
-            obj_points[i]  = pc_as_numpy_array[index,:3] 
-        return obj_points
-    
-    
-    
-    def select_roi_gui(self):
-        update_slider = {} 
-        def update_label(event):
-            slider = event.widget
-            name = slider_names[sliders.index(slider)]
-            value = (slider.get() - 300) / 100
-            label_values[name].config(text=f"{name}: {value:.2f}")
-            update_slider[name] = value 
 
-            
-
-
-        def on_exit():
-            root.destroy()
-
-    # Create the main window
-        root = tk.Tk()
-        root.title("Slider GUI")
-        root.geometry("600x300")
-
-        # Create a frame to hold the sliders and labels
-        frame = ttk.Frame(root, padding="20")
-        frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-
-        # Slider names
-        slider_names = [
-            "X Upper Bound",
-            "X Lower Bound",
-            "Y Upper Bound",
-            "Y Lower Bound",
-            "Z Upper Bound",
-            "Z Lower Bound"
-        ]
-
-        # Create six sliders
-        sliders = []
-        for i, name in enumerate(slider_names):
-            slider = ttk.Scale(frame, from_=0, to=600, orient=tk.HORIZONTAL, length=400)
-            slider.set(300)
-            slider.grid(row=i, column=0, columnspan=2, sticky=tk.W+tk.E, padx=10, pady=5)
-            slider.bind('<Motion>', update_label)
-            sliders.append(slider)
-        
-        # Create labels to display the slider values
-        label_values = {}
-        for i, name in enumerate(slider_names):
-            label = ttk.Label(frame, text=f"{name}: 0.00")
-            label.grid(row=i, column=2, sticky=tk.W, padx=10)
-            label_values[name] = label
-
-
-
-        # Create an Exit button
-        exit_button = ttk.Button(frame, text="Exit", command=on_exit)
-        exit_button.grid(row=7, column=0, columnspan=3, pady=10)
-
-        # Run the main loop
-        root.mainloop()
-
-
-
-        return update_slider
-
-    
-    def on_value_changed_x_lower(self,slider):
-        self.x_lower = slider.double_value
-        return self.x_lower
-    
-    def on_value_changed_x_upper(self,slider):
-        self.x_upper = slider.double_value
-        return self.x_upper
-    
-    def on_value_changed_y_lower(self,slider):
-        self.y_lower = slider.double_value
-        return self.y_lower
-    def on_value_changed_y_upper(self,slider):
-        self.y_upper = slider.double_value
-        return self.y_upper
-    def on_value_changed_z_lower(self,slider):
-        self.z_lower = slider.double_value
-        return self.z_lower
-    def on_value_changed_z_upper(self,slider):
-        self.z_upper = slider.double_value
-        return self.z_upper
-
-    def quit_callback(self,app):
-        app.close()
-        print('button')
     
 
     def select_roi(self,pc_as_numpy_array):
-    
-        
 
         while True:
             print("Looping...")
@@ -390,10 +191,9 @@ class calib(Node):
             return
         pc_as_numpy_array = pc_as_numpy_array[ind] 
         self.pcd.points = od3.utility.Vector3dVector(pc_as_numpy_array[:,:3])
-        # Visualize cloud and edit
-        #self.vis = od3.visualization.VisualizerWithEditing()
+
         self.vis = od3.visualization.VisualizerWithVertexSelection()
-        #self.vis = od3.visualization.Visualizer()
+    
         self.vis.create_window('Window for Points Selection')
         self.vis.add_geometry(self.pcd)
         opt = self.vis.get_render_option()
@@ -405,7 +205,7 @@ class calib(Node):
         
         self.vis.destroy_window()
         obj_points = np.zeros((len(pick_points_index),4))
-        #print(pick_points_index  )
+    
         
         for i,point_obj in enumerate(pick_points_index):
             obj_points[i]  = pc_as_numpy_array[point_obj.index,:] 
@@ -429,20 +229,13 @@ class calib(Node):
     def corner_refine(self,img, aruco_corners):
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         #aruco_corners = np.array(aruco_corners, dtype=np.float32)
-        
         refined_corners = cv2.cornerSubPix(img, aruco_corners, (5, 5), (-1, -1), criteria)
         return refined_corners
+    
     def undistort(self,frame,matrix_coefficients,distortion_coefficients):
         undist_img = cv2.undistort(frame,matrix_coefficients,distortion_coefficients)
         return undist_img
-    def pcd_conversion(self,array_numpy):
-        pcd = od31.geometry.PointCloud()
 
-        # Set the point cloud data from the NumPy array
-        pcd.points = od31.utility.Vector3dVector(np.asarray(array_numpy))
-
-        # Save the point cloud to a PCD file
-        od31.io.write_point_cloud(self.save_path + "point_cloud_full_1.pcd", pcd)
 
     def plane_equation(self,roi):
    
@@ -460,52 +253,19 @@ class calib(Node):
         return plane
     
 
-    def line_detect(self,points, all_points):
-        line = pyrsc.Line()
-        print("points",points.shape)
-        # Fit line to the data
-        A, B, inliers = line.fit(points, thresh=0.2, maxIteration=1000)
 
-        print(f"A (3D slope of the line): {A}")
-        print(f"B (Axis interception): {B}")
-
-        # Convert inliers to Open3D point cloud
-        inlier_points = points[inliers]
-        point_cloud = od3.geometry.PointCloud()
-        point_cloud.points = od3.utility.Vector3dVector(all_points)
-
-        # Create line segment for visualization
-        line_segment = od3.geometry.LineSet()
-        line_points = np.vstack([B, B + A])
-        line_segment.points = od3.utility.Vector3dVector(line_points)
-        line_segment.lines = od3.utility.Vector2iVector([[0, 1]])
-
-        # Create visualizer
-        visualizer = od3.visualization.Visualizer()
-        visualizer.create_window()
-
-        # Add point cloud and line segment to visualizer
-        visualizer.add_geometry(point_cloud)
-        visualizer.add_geometry(line_segment)
-
-        # Run visualizer
-        visualizer.run()
-
-        # Close visualizer
-        visualizer.destroy_window()
     def line_detect_scipy(self,points):
         points = Points(points)
         line_fit = Line.best_fit(points)
         print(line_fit)
-        
         return line_fit
+    
     def line_intersection(self,line_a,line_b):
         point = line_a.intersect_line(line_b, check_coplanar = False)
         print('intersection',point)
         return point
 
     def select_line(self,boundary_points):
-
         vis = o3d.visualization.VisualizerWithVertexSelection()
         vis.create_window('select line')
         boundary_pcd = o3d.geometry.PointCloud()
@@ -553,6 +313,8 @@ class calib(Node):
         # Run the visualizer
         vis.run()
         vis.destroy_window()
+
+
     def find_point_on_plane(self,a, b, c, d):
         
         # Set x = 0 and y = 0
@@ -565,9 +327,9 @@ class calib(Node):
             return (x, y, z)
         else:
             raise ValueError("Coefficient c cannot be zero, as it would result in division by zero.")
+        
+        
     def plane_fitting(self,plane_model,object_points):
-
-
         a,b,c,d = plane_model
         point = self.find_point_on_plane(a, b, c, d)
         plane = Plane(point= point, normal=[a,b,c] )
@@ -598,17 +360,13 @@ class calib(Node):
        
         return points, projected_points[:,:3], projected_points
     
-    def sort_scan_beam(self, points):
-        
+    def sort_scan_beam(self, points):        
         sorted_point_cloud = points
-
-        
         return sorted_point_cloud
     
     def fix_scan_beams(self,scan_beams):
         new_beams = np.empty((0, 4), dtype=float)
         values, indexes = np.unique(scan_beams[:,3] ,return_index=True)
-
         for scan in values:
             index = np.where(scan_beams[:,3] == scan)[0]
             
