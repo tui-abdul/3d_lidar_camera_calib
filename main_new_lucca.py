@@ -57,15 +57,7 @@ class calib(Node):
         #self.vis.create_window()
         self.bridge = CvBridge()
 
-        #initialize gui valies
-        self.x_upper = 0  #"X Upper Bound",
-        self.x_lower = 0  #"X Lower Bound",
-        self.y_upper = 0  #"Y Upper Bound",
-        self.y_lower = 0  #"Y Lower Bound",
-        self.z_upper = 0  #"Z Upper Bound",
-        self.z_lower = 0  #"Z Lower Bound"
-        #self.app = gui.Application.instance
-        #self.app.initialize()
+
         od3.utility.set_verbosity_level(od3.utility.VerbosityLevel.Debug)
         self.skip_flag = None
         self.points_2d = []
