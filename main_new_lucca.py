@@ -33,16 +33,19 @@ class calib(Node):
 
     def __init__(self):
         super().__init__('publisher')
-        with open('front_mid_teleop.yaml', "r") as file_handle:
+        with open("param.yaml","r") as file_handler:
+            load_data = yaml.safe_load(file_handler)
+        print(load_data["camera_intrinsic_param"])
+        with open(load_data["camera_intrinsic_param"] , "r") as file_handle:
             self.calib_data = yaml.safe_load(file_handle)
 
         matrix_coefficients =    self.calib_data["camera_matrix"]["data"]
         distortion_coefficients = self.calib_data["distortion_coefficients"]["data"]
         self.matrix_coefficients = np.array(matrix_coefficients).reshape(3,3)
         self.distortion_coefficients = np.array(distortion_coefficients)
-        self.save_path = "/home/abd1340m/Dokumente/os_0-webcam/data/"
-        image_color = '/cam_teleoperation/front_mid'
-        ouster = '/points'
+        #self.save_path = "/home/abd1340m/Dokumente/os_0-webcam/data/"
+        image_color = load_data["camera_topic"] 
+        ouster = load_data["lidar_topic"] 
                 # Subscribe to topics
         image_sub = message_filters.Subscriber(self,Image,image_color)
         ouster = message_filters.Subscriber(self, PointCloud2,ouster,qos_profile= qos.qos_profile_sensor_data)#qos.ReliabilityPolicy.BEST_EFFORT)
