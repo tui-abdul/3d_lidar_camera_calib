@@ -18,10 +18,11 @@ class camera_publisher(Node):
 
     def __init__(self):
         super().__init__('publisher')
-        #with open('/home/abd1340m/Dokumente/ros2_overlay/src/overlay/overlay/0372_622_data/40253622.yaml', "r") as file_handle:
-        with open('front_mid_teleop.yaml', "r") as file_handle:
-        #with open('/home/abd1340m/Dokumente/os_0-webcam/valeo_cam.yaml', "r") as file_handle:
-        #with open('calibrationdata_office_new_basler/ost.yaml', "r") as file_handle:     
+    
+        with open("param.yaml","r") as file_handler:
+            load_data = yaml.safe_load(file_handler)
+        with open(load_data["camera_intrinsic_param"] , "r") as file_handle:
+        
         
             self.calib_data = yaml.safe_load(file_handle)
         
@@ -30,37 +31,19 @@ class camera_publisher(Node):
         self.matrix_coefficients = np.array(matrix_coefficients).reshape(3,3)
         self.distortion_coefficients = np.array(distortion_coefficients)
     
-        #image_color = '/basler_pole_a_left_id_103_sn_603/my_camera/pylon_ros2_camera_node/image_raw'  #pole a
-        #ouster = '/ouster_pole_a_1108/points'  # pole a
-        image_color = '/cam_teleoperation/front_mid'  
-        ouster = '/points' 
+
+        image_color = load_data["camera_topic"]  
+        ouster = load_data["lidar_topic"]
                 # Subscribe to topics
         image_sub = message_filters.Subscriber(self,Image,image_color)
-        ouster = message_filters.Subscriber(self, PointCloud2,ouster,qos_profile= qos.qos_profile_sensor_data)#qos.ReliabilityPolicy.BEST_EFFORT)
+        ouster = message_filters.Subscriber(self, PointCloud2,ouster,qos_profile= qos.qos_profile_sensor_data)
 
         # Synchronize the topics by time
         ats = message_filters.ApproximateTimeSynchronizer(
             [image_sub, ouster], queue_size=15, slop=0.05, allow_headerless=True)
         ats.registerCallback(self.callback)
         self.bridge = CvBridge()
-        #self.rvec = np.array([ 0.7426531 , -1.55368898 , 1.73315511],dtype=np.float32).reshape((3,1)) #data from lab 0372_302
-        #self.tvec = np.array([-0.12189352,-0.02106923,-0.04794924],dtype=np.float32).reshape((3,1)) #data from lab 0372_302
-        #self.rvec = np.array([  0.76802442, -1.58597481 , 1.69252295],dtype=np.float32).reshape((3,1)) #data from lab 0372_302
-        #self.tvec = np.array([-0.14695569,0.05743703,-0.03597695],dtype=np.float32).reshape((3,1)) #data from lab 0372_302
-        #self.rvec,self.tvec = execute_code()
-        #self.rvec = self.rvec#.reshape((3,1))
-        #self.tvec = self.rvec#.reshape((3,1))
-        #self.rvec = np.array([   0.88819031,-1.70450186, 1.63215907],dtype=np.float32).reshape((3,1)) # orignal lab data lidar 1108 and camera 618 (lab)
-        #self.tvec = np.array([-0.15081952,  0.02194535, -0.04891262],dtype=np.float32).reshape((3,1)) # orignal lab data lidar 1108 and camera 618 (lab)
-
-        #self.tvec = np.array([ 0.15307423, 0.01248773, -0.04994381],dtype=np.float64).reshape((3,1)) #data lidar 1108 and camera 603
-        #self.rvec = np.array([ 1.48854854, -0.74412371,   0.67688705],dtype=np.float64).reshape((3,1)) #data lidar 1108 and camera 603
-
-        #self.tvec = np.array([ -0.12755348, 0.03376902, 0.09379576],dtype=np.float64).reshape((3,1)) # intersection data lidar 1108 and camera 618
-        #self.rvec = np.array([  0.82430635, -1.5835378 , 1.71078744],dtype=np.float64).reshape((3,1)) # intersection data lidar 1108 and camera 618
-
-        #self.tvec = np.array([ -0.06127661, -0.09048259, 0.11473779],dtype=np.float64).reshape((3,1)) # lucca 1
-        #self.rvec = np.array([   1.23048919, -1.21280759, 1.16656343],dtype=np.float64).reshape((3,1)) # lucca 1
+   
 
         self.tvec = np.array([  -0.01180592, -0.07347713, 0.11045512],dtype=np.float64).reshape((3,1)) # lucca 2
         self.rvec = np.array([  1.236434  ,-1.21476398, 1.18096936] ,dtype=np.float64).reshape((3,1)) # lucca 2
@@ -185,14 +168,7 @@ class camera_publisher(Node):
         cv2.imshow('Image',undistorted_image)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             exit()
-        #cv2.imshow('Image',image)
 
-        #while True:
-        #key = cv2.waitKey(0)
-        #if key == 27:  # 27 is the ASCII code for the Escape key
-        #cv2.destroyAllWindows()
-        #    exit()
-        #pass
 
 def main(args=None):
     rclpy.init(args=args)
