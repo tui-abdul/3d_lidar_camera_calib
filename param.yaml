@@ -1,3 +1,3 @@
 camera_intrinsic_param: 'front_mid_teleop.yaml'
-camera_topic: '/cam_teleoperation/front_mid'
+camera_topic: 'camera_intrinsic_param/cam_teleoperation/front_mid'
 lidar_topic: '/points'
