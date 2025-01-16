@@ -3,6 +3,7 @@
 ## Overview
 This repository contains the implementation of a ROS 2 node for camera-lidar calibration and related computer vision tasks. The node processes synchronized image and point cloud data to estimate extrinsic parameters, refine 2D-3D correspondences, and perform tasks such as ArUco marker detection and plane fitting.
 
+![Demo of Feature](images/vis.gif)
 ## Prerequisites
 
 ### Software Requirements
