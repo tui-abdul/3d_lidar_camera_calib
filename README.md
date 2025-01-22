@@ -10,7 +10,7 @@ This repository contains the implementation of a Python ROS 2 node for monocular
 ## Prerequisites
 
 ### Software Requirements
-- Python 3.10
+- Python 3.10.12
 - ROS 2
 - OpenCV
 - Open3D
@@ -24,7 +24,7 @@ This repository contains the implementation of a Python ROS 2 node for monocular
 1. Install ROS 2 following the [official guide](https://docs.ros.org/).
 2. Install the required Python libraries:
    ```bash
-   pip install opencv-python open3d cv-bridge pyransac3d matplotlib skspatial
+   pip3 install -r requirement.txt
    ```
 3. Clone the repository and navigate to the working directory.
 
