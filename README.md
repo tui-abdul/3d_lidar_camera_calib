@@ -38,9 +38,8 @@ The node subscribes to the following topics:
 ### Node Initialization
 To start the node, execute:
 ```bash
-ros2 run <package_name> calib
+python3 main.py
 ```
-Replace `<package_name>` with the actual name of the package containing the node.
 
 ### Parameters
 The following parameters can be configured in the `front_mid_teleop.yaml` file:
