@@ -15,24 +15,20 @@ This repository contains the implementation of a Python ROS 2 node for monocular
 ```
 
 2. Navigate to the Docker Directory: Move into the docker directory within the cloned repository:
-```
-bash
+```bash
 	cd 3d_lidar_camera_calib/docker
 ```
 
 3. Build the Docker Image: Use the provided Dockerfile to build the Docker image. Run the following command:
-```
-bash
+```bash
 	docker build -t 3d_lidar_camera_calib_image .
 ```
 4. Run the Docker Container: After building the image, you can run the Docker container using the run_docker.sh script provided in the docker directory. First, ensure the script has execute permissions:
-```
-bash
+```bash
 	chmod +x run_docker.sh
 ```
 5. Then, execute the script:
-```
-bash
+```bash
 	./run_docker.sh
 ```
 
