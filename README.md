@@ -119,7 +119,7 @@ If you use this work, please cite:
 ```
 @inproceedings{paracha2025interactive,
   title={An interactive approach to extrinsically calibrate 3D LiDAR and monocular camera using open source toolchain},
-  author={Paracha, Abdul Haq Azeem and Br{\"u}ckner, Christoph and Studencki, Lucila Pati{\~n}o and Arbeiter, Georg},
+  author={Paracha, Abdul Haq Azeem and Brckner, Christoph and Studencki, Lucila Patio and Arbeiter, Georg},
   booktitle={2025 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR)},
   pages={1--6},
   year={2025},
