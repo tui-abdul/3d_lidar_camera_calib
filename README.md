@@ -113,14 +113,7 @@ Contributions are welcome! Please fork the repository and create a pull request 
 This project is licensed under
 ## If you use this work, please cite:
 
-@inproceedings{paracha2025interactive,
-  title={An interactive approach to extrinsically calibrate 3D LiDAR and monocular camera using open source toolchain},
-  author={Paracha, Abdul Haq Azeem and Br{\"u}ckner, Christoph and Studencki, Lucila Pati{\~n}o and Arbeiter, Georg},
-  booktitle={2025 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR)},
-  pages={1--6},
-  year={2025},
-  organization={IEEE}
-}
+<pre> ```bibtex @inproceedings{paracha2025interactive, title={An interactive approach to extrinsically calibrate 3D LiDAR and monocular camera using open source toolchain}, author={Paracha, Abdul Haq Azeem and Br{\"u}ckner, Christoph and Studencki, Lucila Pati{\~n}o and Arbeiter, Georg}, booktitle={2025 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR)}, pages={1--6}, year={2025}, organization={IEEE} } ``` </pre>
 ## Contact
 For questions or feedback, feel free to reach out to:
 - **Abdul Haq A. Paracha**
