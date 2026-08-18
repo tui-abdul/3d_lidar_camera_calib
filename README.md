@@ -129,4 +129,4 @@ If you use this work, please cite:
 ## Contact
 For questions or feedback, feel free to reach out to:
 - **Abdul Haq A. Paracha**
-- **Email:** [Insert email here]
+- **Email:** abdulhaq.ah@gmail.com
